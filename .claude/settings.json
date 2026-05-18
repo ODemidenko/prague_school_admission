@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "WebFetch(domain:isv.gov.cz)",
+      "WebFetch(domain:rejstriky.msmt.cz)",
+      "WebFetch(domain:msmt.cz)",
+      "WebFetch(domain:www.msmt.cz)",
+      "WebFetch(domain:data.msmt.cz)",
+      "WebFetch(domain:vdb.czso.cz)",
+      "WebFetch(domain:czso.cz)",
+      "WebFetch(domain:www.czso.cz)",
+      "WebFetch(domain:iprpraha.cz)",
+      "WebFetch(domain:www.iprpraha.cz)",
+      "WebFetch(domain:opendata.iprpraha.cz)",
+      "WebFetch(domain:opendata.praha.eu)",
+      "WebFetch(domain:data.praha.eu)",
+      "WebFetch(domain:www.praha3.cz)",
+      "WebFetch(domain:praha3.cz)",
+      "WebFetch(domain:www.praha7.cz)",
+      "WebFetch(domain:praha7.cz)",
+      "WebFetch(domain:www.praha8.cz)",
+      "WebFetch(domain:praha8.cz)",
+      "WebFetch(domain:www.praha9.cz)",
+      "WebFetch(domain:praha9.cz)",
+      "WebFetch(domain:www.praha10.cz)",
+      "WebFetch(domain:praha10.cz)",
+      "WebFetch(domain:www.praha14.cz)",
+      "WebFetch(domain:praha14.cz)",
+      "WebFetch(domain:mapaskol.cz)",
+      "WebFetch(domain:www.mapaskol.cz)"
+    ]
+  }
+}

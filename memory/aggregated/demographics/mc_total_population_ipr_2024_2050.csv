@@ -1,0 +1,67 @@
+mc,mc_code,year,variant,population,source_slug,notes
+Praha 3,547107,2023,stav,80761,ipr-prognoza-2024-2050-obyvatelstvo,IPR Příloha P.2.04; ČSÚ bilance k 31.12.2023
+Praha 3,547107,2030,PROG,85647,ipr-prognoza-2024-2050-obyvatelstvo,realistic projection (PROG)
+Praha 3,547107,2030,MAX+,86377,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2030,MAX,83016,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2030,MID,82257,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2030,NUL,81579,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2050,PROG,100147,ipr-prognoza-2024-2050-obyvatelstvo,realistic projection (PROG)
+Praha 3,547107,2050,MAX+,105392,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2050,MAX,89113,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2050,MID,84739,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 3,547107,2050,NUL,76155,ipr-prognoza-2024-2050-obyvatelstvo,projection-only variant
+Praha 7,547141,2023,stav,47350,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2030,PROG,51920,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2030,MAX+,53759,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2030,MAX,50199,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2030,MID,48878,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2030,NUL,48181,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2050,PROG,67021,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2050,MAX+,78146,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2050,MAX,55840,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2050,MID,48334,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 7,547141,2050,NUL,45736,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2023,stav,110955,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2030,PROG,114567,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2030,MAX+,117394,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2030,MAX,115393,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2030,MID,113596,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2030,NUL,110039,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2050,PROG,126754,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2050,MAX+,141425,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2050,MAX,131501,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2050,MID,121226,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 8,547158,2050,NUL,99684,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2023,stav,67067,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2030,PROG,75730,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2030,MAX+,75383,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2030,MAX,72936,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2030,MID,71160,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2030,NUL,68105,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2050,PROG,89180,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2050,MAX+,97823,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2050,MAX,86316,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2050,MID,77003,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 9,547166,2050,NUL,65722,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2023,stav,117999,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2030,PROG,122205,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2030,MAX+,126316,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2030,MAX,121869,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2030,MID,120265,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2030,NUL,117048,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2050,PROG,141586,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2050,MAX+,165728,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2050,MAX,135663,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2050,MID,126668,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 10,547174,2050,NUL,107095,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2023,stav,50222,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2030,PROG,52751,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2030,MAX+,54584,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2030,MAX,53205,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2030,MID,52471,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2030,NUL,50965,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2050,PROG,55936,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2050,MAX+,65379,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2050,MAX,58943,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2050,MID,54771,ipr-prognoza-2024-2050-obyvatelstvo,
+Praha 14,547221,2050,NUL,48312,ipr-prognoza-2024-2050-obyvatelstvo,
