@@ -1,0 +1,9 @@
+[project]
+name = "wp04-parse"
+version = "0.1.0"
+description = "Parse spádové obvody (catchment) decrees for Prague ZŠ — WP-04"
+requires-python = ">=3.11"
+dependencies = [
+    "pdfplumber>=0.11",
+    "python-docx>=1.1",
+]

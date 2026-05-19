@@ -1,0 +1,42 @@
+# Sandbox bind-mount artefacts.
+#
+# When a sandboxed process inside the Claude Code harness attempts to read
+# user dotfiles or IDE config that the sandbox blocks, the harness leaves
+# behind /dev/null character devices (major 1 minor 3, owned by
+# nobody:nogroup) at the corresponding paths in the current working dir.
+# Some leak at the repo root, some leak inside any subdir from which a
+# sandboxed bash inspected dotfiles. Ignore them so `git status` stays
+# meaningful — they are not real files and cannot be deleted by the
+# project user.
+
+# Root-level litter (user dotfiles + IDE config).
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.profile
+/.zprofile
+/.zshrc
+/.ripgreprc
+/.mcp.json
+/.idea
+
+# .claude/ at root contains real project config (settings.json) but the
+# harness creates these three as bind-mount stubs at every .claude/ path
+# it touches. They are never legitimate project files at any depth.
+**/.claude/agents
+**/.claude/commands
+**/.claude/skills
+
+# session-2 NKOD recon scratch (oleg-owned files removed in session 3 once
+# the findings were absorbed into progress/WP-03-enrolment.md). The dir
+# itself can't be deleted while the harness still has devtmpfs bind mounts
+# inside its .claude/ subdir.
+memory/raw/_scratch/
+
+# Python build / venv detritus.
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.uv-cache/

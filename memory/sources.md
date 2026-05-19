@@ -59,6 +59,79 @@ For each entry:
 - **Used by:** WP-02 (cross-check), WP-04 (catchment decrees usually linked from here).
 - **Notes:** Cross-check vs rejstřík to catch the private/church ZŠ that MČ pages omit.
 
+## Tier A — catchment (spádové obvody) decrees
+
+### hmp-vyhlaska-19-2025
+- **URL / location:** Local: `memory/raw/catchment/vyhlaska-hmp-19-2025_via-P6.pdf`. Original publication routes: gazette `https://magistrat.praha.eu` (citywide decree); also mirrored on `https://www.praha6.cz/`. Decree title: *Obecně závazná vyhláška hl. m. Prahy č. 19/2025, o školských obvodech základních škol*.
+- **Tier:** A (binding legal text; the *only* source-of-truth for spádové obvody in Praha).
+- **What it has:** Per-MČ × ZŠ catchment assignment — list of streets (and where partial, house-number ranges) that legally belong to each ZŠ in each MČ. Covers all 22 city districts + 35 small MČs. Original 19/2025 was effective **2025-04-01**; the version on disk was **amended 11. 12. 2025 and is effective 2026-01-01** — this is the version that binds the April 2027 zápis (2021 cohort) and beyond.
+- **Format:** PDF, 90 pages, two-column layout per page. Section header is literal `"Městská část Praha N"`. Each school is introduced by a one-line heading starting with `"Základní škola"` or `"Fakultní základní škola"`. Streets follow as two-column lists; some entries carry house-number ranges (`"sudá č. X – Y, lichá č. A – B"`, `"č. p. NNN/M"`, `"(vyjma NNN/M)"`).
+- **Date checked:** 2026-05-18 — file already on disk by main agent prior to WP-04 parser dispatch; parsed offline.
+- **Used by:** WP-04 (primary).
+- **Notes:** PDF column layout merges into linear text under naive extraction — must split by x-coordinate. The parser at `notebooks/wp04_parse/parse.py` uses `pdfplumber.extract_words` with a y-band grouping and an x-gap heuristic (≥25 pt and straddling the page midline = column separator).
+
+### p9-spadova-vyhlaska-docx
+- **URL / location:** Local: `memory/raw/catchment/p9_spadova-vyhlaska-1.1.2026.docx`. Likely published from `https://praha9.cz/` "Školství" area.
+- **Tier:** A (MČ Praha 9's published excerpt of the citywide decree).
+- **What it has:** P9-only section of the 2026-01-01 spádové obvody — one Word paragraph per street, structurally cleaner than the citywide PDF for P9.
+- **Format:** DOCX, 308 paragraphs (~263 streets across 6 P9 ZŠ).
+- **Date checked:** 2026-05-18 — already on disk; parsed offline.
+- **Used by:** WP-04 (primary for P9; replaces citywide P9 section).
+- **Notes:** Each ZŠ is introduced by a paragraph that starts with `Základní škola …` followed by `sídlo: <address>`. Streets follow as bare paragraphs. House-number ranges sometimes wrap across paragraphs; the parser stitches continuations whose first character is lowercase / digit.
+
+### p9-hmp-vyhlaska-docx
+- **URL / location:** Local: `memory/raw/catchment/p9_HMP-vyhlaska-1.1.2026.docx`.
+- **Tier:** A (MČ Praha 9's mirror of the full citywide decree, in DOCX form).
+- **What it has:** Citywide 19/2025 amended text as DOCX. Kept as a cross-check for the citywide PDF.
+- **Format:** DOCX, 220 KB.
+- **Date checked:** 2026-05-18 — already on disk; not used by the parser (citywide PDF is canonical), retained for cross-validation in future re-runs.
+- **Used by:** WP-04 (cross-check, not run).
+
+### p3-skolske-obvody-pdf
+- **URL / location:** Local: `memory/raw/catchment/p3_skolske-obvody-2026.pdf`. Likely published from `https://www.praha3.cz/` (usnesení Rady MČ P3 855/2025-10-08).
+- **Tier:** A (P3 MČ's published excerpt of the 2026-01-01 amendment).
+- **What it has:** P3-only catchment lists, 3 pages, 10 schools, ~232 streets.
+- **Format:** PDF (two-column). File header reads `"Školské obvody 2026 - MČ Praha 3"` — no `"Městská část Praha 3"` banner, so the parser passes `default_mc='Praha 3'`.
+- **Date checked:** 2026-05-18 — on disk; parsed as cross-check only.
+- **Used by:** WP-04 (cross-check).
+
+### p7-ozv-skolske-obvody-pdf
+- **URL / location:** Local: `memory/raw/catchment/p7_OZV-skolske-obvody-2025.pdf`.
+- **Tier:** A (MČ Praha 7's excerpt of vyhláška 19/2025).
+- **What it has:** P7-only catchment lists, 2 pages, 6 schools, 131 streets. **Filename suggests 2025-04-01 base** — pre-amendment edition; but its P7 content matches the 2026-01-01 citywide for P7. The 2026 amendment did not substantively change P7.
+- **Format:** PDF (two-column).
+- **Date checked:** 2026-05-18 — on disk; parsed as cross-check.
+- **Used by:** WP-04 (cross-check).
+- **Notes:** For a future re-run that needs to detect edition drift, the parser should diff the P7 cross-check against the citywide P7 section.
+
+### p14-vyhlaska-19-2025
+- **URL / location:** Local: `memory/raw/catchment/vyhlaska-19-2025_via-P14.pdf`. Likely from `https://www.praha14.cz/`.
+- **Tier:** A.
+- **What it has:** P14 section of vyhláška 19/2025, 4 pages, 6 ZŠ, 276 streets.
+- **Format:** PDF (two-column). Has the `"Příloha k …"` and `"Městská část Praha 14"` banners.
+- **Date checked:** 2026-05-18 — on disk; parsed as cross-check.
+- **Used by:** WP-04 (cross-check).
+- **Notes:** The P14 ZŠ have legal names starting `"Základní škola, Praha 9 - …"` — they're MČ Praha 14 schools despite the historic "Praha 9" naming. RED-IZO is the only safe join key; the parser's `HAND_OVERRIDES` table maps each P14 school's address tag to its RED-IZO.
+
+## Tier A — enrolment (MŠMT statistical yearbook)
+
+### msmt-statis-rocenka-hmp
+- **URL / location:** UI root: `https://statis.msmt.gov.cz/rocenka/`. Form endpoint: `POST https://statis.msmt.gov.cz/rocenka/rocenka.asp` with body `kapit=C&tab=<TABLE>&rck=<N>` (windows-1250 response). Local: `memory/raw/enrolment/statis_msmt/<TAB>_rck<N>.html` (40 files, ~6.1 MB) + aggregated CSV at `memory/aggregated/enrolment/hmp_msmt_yearbook_2005_2025.csv` (1 450 rows). Cross-reference: **R-07 in `RERUN.md`** documents the full recipe.
+- **Tier:** A — **MŠMT's official statistical yearbook**, "Statistická ročenka školství — výkonové ukazatele" (the public face of the M 3 / S 3-01 výkaz aggregated to NUTS-3 regions).
+- **What it has:** Kraj-level enrolment indicators for the **Hlavní město Praha** kraj (NUTS CZ010), across **20 school years (2005/2006 → 2025/2026)** with one yearbook-edition gap for `rck='5a'` (2010/2011). Three tables pulled in this round:
+  - **C1.25.1** "Zahájení povinné školní docházky — školy, zapisované děti podle výsledku zápisu, z toho dívky — podle organizace vyučování, území" — the **zápis (enrolment registration) outcome**: total zapisované děti, zapsané na dané škole, převedené na jinou školu, s žádostí o odklad, etc. Available 2011/2012 → 2025/2026. The 2021/2022 edition added the `z celku ze spádového obvodu` sub-row, which jumped the indicator count from 39 to 65.
+  - **C1.22.1** "Nově přijatí do 1. ročníků, z toho dívky — podle věku" — **1st-grade intake by age (5letí, 6letí, 7letí, 8letí, …)**, the cohort-bridging table. Available 2014/2015 → 2025/2026.
+  - **C1.4.1** "Žáci v ročnících" — **pupils per grade** (1. ročník through 9. ročník, plus age breakdowns). Available 2005/2006 (one-off) + 2014/2015 → 2025/2026.
+- **Format:** Server-rendered HTML tables (windows-1250); two-row `<th>` block with rowspan/colspan for column headers; left-side `<td class='levyC'>` cells with rowspan groups for the kraj's sub-rows; right-side `<td class='dataC'>` cells for values.
+- **Date checked:** **2026-05-19** — full 20-year pull completed; CSV anchor verified (Praha 2025/2026 zápis total = 25 075).
+- **Used by:** WP-03 (primary — fallback B′ after the open-data dead end).
+- **Notes:**
+  - **Granularity ceiling = kraj.** The yearbook does NOT publish per-MČ or per-school rows for the Praha kraj. Per-school enrolment is held in MŠMT's central matrika but treated as personal-data-adjacent — see `progress/WP-03-enrolment.md` for the structural recon (NKOD + DSIA confirmed the open-data fence is structural).
+  - **Older yearbooks return HTTP 500.** Pre-2011 yearbooks don't carry C1.25.1; pre-2014 don't carry C1.22.1 and don't carry most of C1.4.1. The script logs each (tab, rck) failure and continues; the sidecar README enumerates the 23 known gaps.
+  - **`rck='5a'` is a non-numeric ordinal** (the school year 2010/2011 was a one-off transitional edition). The CSV's `school_year_ord` uses the calendar start-year (2005..2025) to keep ordering numeric while preserving the anomaly's traceability via `source_url`.
+  - **Host is not in `.claude/settings.json` allowlist.** Every refresh must run under `Bash(dangerouslyDisableSandbox: true)`; the script bundles all 63 POSTs into one Bash call so the user is prompted only once.
+  - **The yearbook UI publishes ZIP exports** of full chapters (`https://statis.msmt.gov.cz/rocenka/2025/kapitola_a.zip`, etc.) — kept in mind as a future shortcut if a refresh needs ALL of chapter C at once rather than three named tables.
+
 ## Tier B — aggregators & quality journalism
 
 ### mapaskol-cz

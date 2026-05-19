@@ -206,6 +206,100 @@ When a section is re-run successfully against the same source, bump `Last verifi
   - **Excluded by design** (in scope: only MČ 3/7/8/9/10/14): all schools in adjacent MČs that share an obvod, including MČ Praha-Troja (Trojská 110), MČ Praha 15 (Hostivař/Petrovice/Horní Měcholupy), MČ Praha-Čakovice, MČ Horní Počernice, MČ Letňany, MČ Kbely, MČ Vinoř, etc. If a future round needs them, add their `(castObce, psc)` entries to `CAST_PSC_TO_MC`.
 - **Last verified:** 2026-05-18.
 
+### R-06 hmp-vyhlaska-19-2025-spadove-obvody
+
+- **WP:** WP-04 (Catchment).
+- **Depends on:** R-05 (`memory/aggregated/schools/zs_by_mc.csv` — RED-IZO join target).
+- **Source URL:**
+  - **Citywide (primary):** *Obecně závazná vyhláška hl. m. Prahy č. 19/2025, o školských obvodech základních škol*, amended by usnesení ZHMP 11. 12. 2025, effective **2026-01-01**. The PDF on disk was downloaded as `vyhlaska-hmp-19-2025_via-P6.pdf` — MČ Praha 6's mirror of the citywide decree. Re-discovery: original publication on the city's úřední deska (`https://magistrat.praha.eu` → Předpisy → OZV → 19/2025); MČ-6 mirror at `https://www.praha6.cz/` under Školství / Spádové obvody. The two are textually identical.
+  - **Per-MČ excerpts (cross-checks only):** each in-scope MČ publishes its own excerpt on its website. The set already on disk:
+    - P3: `https://www.praha3.cz/skolstvi` → `p3_skolske-obvody-2026.pdf` (Rada MČ P3 usnesení 855/2025-10-08).
+    - P7: `https://www.praha7.cz/skolstvi` → `p7_OZV-skolske-obvody-2025.pdf` (2025-04-01 base; P7 content matches 2026 amendment).
+    - P9 (cleanest format, **used as primary for P9**): `https://praha9.cz/skolstvi` → `p9_spadova-vyhlaska-1.1.2026.docx`.
+    - P9 citywide DOCX: `p9_HMP-vyhlaska-1.1.2026.docx` (held as DOCX-form cross-check; not parsed by default).
+    - P14: `https://www.praha14.cz/skolstvi` → `vyhlaska-19-2025_via-P14.pdf`.
+    - P8 and P10: no per-MČ excerpt downloaded — citywide is canonical.
+- **Auth / access:** All six files are local on disk under `memory/raw/catchment/`. No network access needed at re-run time. For a fresh download of an updated decree, main-agent WebFetch works on `praha3.cz`, `praha7.cz`, `praha9.cz`, `praha14.cz` (subagent re-fetch needs `Bash(dangerouslyDisableSandbox: true)` because the sandbox network allowlist excludes most MČ hosts). The citywide source — `magistrat.praha.eu` or `praha.eu` — is **not** in the sandbox allowlist; if the citywide must be refetched, do it via `curl -fsSL` with sandbox disabled.
+- **Procedure:**
+  1. **No fetch needed for the existing snapshot** — the six files are checked in under `memory/raw/catchment/`. For a fresh 2027+ amendment: fetch the citywide PDF and the per-MČ excerpts to the same paths.
+  2. Subagent runs `notebooks/wp04_parse/parse.py`:
+     ```
+     cd notebooks/wp04_parse
+     uv run python parse.py
+     ```
+     The script depends on `pdfplumber` and `python-docx` (declared in `pyproject.toml`); uv resolves them on first run. It performs:
+     - Two-column PDF parse via `pdfplumber.extract_words`, y-banded into rows, x-gap heuristic for column split (gap ≥ 25 pt that straddles page midline ⇒ column separator).
+     - Heading detection by literal prefix (`"Základní škola"`, `"Fakultní základní škola"`, `"Církevní základní škola"`, `"Městská část"`).
+     - Wrapped-line stitching: a row whose first character is lowercase or digit (excluding known new-street starters like `náměstí`, `nábřeží`, `sady`, `park`) is appended to the previous street's text in the same column.
+     - DOCX parse (P9 streets-only excerpt only): paragraph-by-paragraph.
+     - School-name → RED-IZO join via the hand-curated `HAND_OVERRIDES` table — keyed on `(mc, short_address_tag)` such as `('Praha 9', 'litvinovska 500')`. The decree prints short brand names; the rejstřík uses long legal names. Don't try fuzzy matching on the long names alone — the address tag is the stable bridge.
+  3. The deliverable CSV is written to `memory/aggregated/catchment/streets_to_zs.csv`. Schema: `mc, street, house_number_range, red_izo, zs_name, source_file, effective_date`. UTF-8, no BOM, LF newlines. `effective_date` is hardcoded to `2026-01-01` (citywide decree's stated účinnost).
+  4. Sidecar files at the same path: `_README.md` (schema + coverage matrix + invariant-check results) and `_anomalies.md` (unmatched school headings, missing state ZŠ with manual classification, format ambiguities).
+- **Expected output:**
+  - `memory/aggregated/catchment/streets_to_zs.csv` — **1 953 rows** on the 2026-01-01 snapshot. Per-MČ row counts:
+    | MČ | Rows |
+    |---|---|
+    | Praha 3  | 235 |
+    | Praha 7  | 131 |
+    | Praha 8  | 527 |
+    | Praha 9  | 263 |
+    | Praha 10 | 521 |
+    | Praha 14 | 276 |
+  - `memory/aggregated/catchment/_README.md`, `_anomalies.md` — companion docs.
+- **Verification:**
+  - Total row count = 1953 (`wc -l` ≥ 1954 including header). ±50 is reasonable for adjacent amendments.
+  - **Three concrete anchors** (verify by `grep` on `streets_to_zs.csv`):
+    - `grep "^Praha 14,Chvaletická" streets_to_zs.csv` → has `red_izo=600040585` (Lehovec — name says "Praha 9" but MČ is Praha 14).
+    - `grep "^Praha 3,Vinohradská" streets_to_zs.csv` → returns ≥ 3 rows (Vinohradská is split across 3 P3 ZŠ by house-number ranges).
+    - `grep "^Praha 10,Vinohradská" streets_to_zs.csv` → returns ≥ 1 row (Vinohradská also spans P10).
+  - **Coverage invariant:** 57 / 62 state non-`zs_specialni` ZŠ from `zs_by_mc.csv` appear at least once in the catchment CSV. The 5 missing are 3 hospital schools (Bulovka, Bohnice, Nemocnice Na Františku/Za Invalidovnou 1), 2 logopedická (LOPES Čimice, Moskevská 29) — none are spádové by design. One non-classified miss: RED-IZO `691019061` (ZŠ V Olšinách, P10) — possibly a new school post-decree; flagged in `_anomalies.md`.
+  - **Lehovec invariant:** `awk -F, '$4=="600040585" {print $1}' streets_to_zs.csv | sort -u` returns exactly `Praha 14`.
+  - **Red-izo validity invariant:** every distinct `red_izo` in the CSV exists in `zs_by_mc.csv`.
+- **Robustness notes:**
+  - **Decree amendments rotate filenames.** The 19/2025 base was 2025-04-01; the 2026-01-01 amendment uses the same decree number. A future amendment may rename the file to a new decree number (e.g. `7/2027`). Re-fetch from `magistrat.praha.eu` and check the `§ … nabývá účinnosti dnem …` line on page 1 of the PDF to confirm the effective date.
+  - **PDF column-flow is brittle.** The parser depends on a clean two-column layout. If a future amendment switches to single-column or table layout, the column-gap heuristic in `_extract_rows_from_page` must be revised. The DOCX P9 excerpt is the most stable format; if any MČ publishes DOCX versions, prefer them.
+  - **School-name → RED-IZO join is hand-curated.** New ZŠ entering the decree require adding an entry to `HAND_OVERRIDES`. The pattern is `(mc, normalised-address-tag) → redizo`. Normalise via the script's `_normalise_school_name` (lowercase + strip accents + alphanumerics only).
+  - **Per-MČ excerpts may lag the citywide.** P7 and P14 files on disk pre-date the 2026 amendment; they were verified by content-diff to match the citywide for those MČ in this snapshot. Re-run agents must re-verify on any new amendment cycle.
+  - **The P3 PDF has no `"Městská část Praha 3"` banner** — its header reads `"Školské obvody 2026 - MČ Praha 3"`. The parser handles this by accepting a `default_mc=` argument when calling `parse_two_column_pdf` on a per-MČ excerpt.
+  - **House-number ranges are kept as the raw decree string.** No range-expansion is done — too brittle (lichá/sudá parity, comma-separated lists, `(vyjma …)`-exclusion clauses, č. p. vs. č. o. distinction). Downstream code that needs to test "does house X fall in this catchment?" must parse the string itself; the project does not currently require this.
+- **Last verified:** 2026-05-18.
+
+### R-07 msmt-statis-rocenka-hmp-2005-2025
+
+- **WP:** WP-03 (Enrolment series) — fallback B′ after the open-data dead end (per-school data structurally unavailable; see `progress/WP-03-enrolment.md` and the Tier-A `msmt-statis-rocenka-hmp` entry in `memory/sources.md`).
+- **Depends on:** none.
+- **Source URL:** UI root `https://statis.msmt.gov.cz/rocenka/`. Form endpoint: `POST https://statis.msmt.gov.cz/rocenka/rocenka.asp` with form-encoded body `kapit=C&tab=<TABLE>&rck=<N>`. `N` maps to school years via the dropdown: `1`→2005/2006, …, `5`→2009/2010, **`5a`→2010/2011**, `6`→2011/2012, …, `20`→2025/2026 (21 values total). Response is HTML in **windows-1250**.
+- **Auth / access:** **Host `statis.msmt.gov.cz` is NOT in `.claude/settings.json` allowlist.** All POSTs must run with `Bash(dangerouslyDisableSandbox: true)` — the user will be prompted once per Bash call. The script `notebooks/wp03_parse/fetch_statis.py` bundles all 63 fetches into a single Bash invocation, so only one prompt is required for the whole refresh. No HTTP auth; no Cookie required; a polite `User-Agent` header is set in the script. Polite pacing: `time.sleep(0.5)` between requests (≈ 30 s total).
+- **Procedure:**
+  1. From repo root: `python3 notebooks/wp03_parse/fetch_statis.py` (run under `Bash(dangerouslyDisableSandbox: true)`). The script is stdlib-only — no `uv` env needed; just CPython 3.11+ on PATH.
+  2. The script does, for each (tab ∈ {C1.25.1, C1.22.1, C1.4.1}, rck ∈ 21 values):
+     - POSTs the form-encoded body, decodes `windows-1250`, caches the transcoded UTF-8 HTML at `memory/raw/enrolment/statis_msmt/<tab>_rck<N>.html`.
+     - Parses the page with a stdlib `html.parser.HTMLParser` that expands rowspan/colspan into a 2-D grid. Finds the data `<table>` (the one containing the literal `Hlavní město Praha`), extracts the kraj's rowspan group, and emits one row per (sub-label × column-header) pair.
+     - Column headers are stitched from the table's multi-row `<th>` block — captured from the HTML, not hardcoded. Sub-labels come from the left-side `<td class='levyC'>` cells inside Praha's rowspan group (e.g. `(celkem)`, `v tom / poprvé u zápisu`, `v tom / přicházejí po odkladu`, `v tom / z toho po dodatečném`, `z celku ze spádového obvodu`).
+     - The Praha-group end is detected by checking the NUTS-code anchor `CZ010` — stops as soon as the rowspan-continuation no longer carries `CZ010` at its original column index. This sidesteps drift across yearbook editions (kraj-name changes like "Střední Čechy" → "Středočeský kraj" cannot leak).
+  3. Writes the long-format CSV at `memory/aggregated/enrolment/hmp_msmt_yearbook_2005_2025.csv` with columns `school_year, school_year_ord, table_code, table_topic, indicator, value, source_url, snapshot_fetched_at`. **`school_year_ord` deviates from the spec wording (rck integer 1..20):** the dropdown's `rck='5a'` (2010/2011) is non-numeric, so the ordinal column carries the school-year **start year** (2005..2025) instead — strictly monotonic, joins naturally against `births_by_mc_year.csv` and the `children_by_age_mc_year.csv` tables in `memory/aggregated/demographics/`.
+  4. Sidecar README: `memory/aggregated/enrolment/_README.md` — schema, full coverage matrix, list of known gaps (the (tab, rck) combos that returned HTTP 500), and the verification anchor.
+- **Expected output:**
+  - `memory/raw/enrolment/statis_msmt/*.html` — 40 files (~6.1 MB total). The 23 missing combos (HTTP 500 on the older years) are documented in the sidecar README and do NOT write a file.
+  - `memory/aggregated/enrolment/hmp_msmt_yearbook_2005_2025.csv` — **1 450 long-format rows** on the 2026-05-19 snapshot.
+  - `memory/aggregated/enrolment/_README.md` — schema + coverage matrix + verification anchor.
+- **Verification:**
+  - Total row count = 1450 (`wc -l ≥ 1451` including header) on the 2026-05-19 snapshot. ±50 is reasonable for adjacent yearbook editions.
+  - **Verification anchor:** `grep -F "2025/2026,2025,C1.25.1" memory/aggregated/enrolment/hmp_msmt_yearbook_2005_2025.csv | grep "(celkem) :: Zapisované děti / celkem"` → expected value `25075` (Hlavní město Praha, school year 2025/2026, total registered zápis attendees).
+  - **Coverage matrix** (table × year availability — see `_README.md` for full):
+    - C1.25.1 (zápis výsledky): 2011/2012 → 2025/2026 (15 years × 39 or 65 indicators).
+    - C1.22.1 (1. ročník × věk): 2014/2015 → 2025/2026 (12 years × 28 indicators).
+    - C1.4.1 (žáci v ročnících): 2005/2006 + 2014/2015 → 2025/2026 (13 years × 15 to 32 indicators).
+  - **Schema-drift indicator counts:** C1.25.1 stepped from 39 → 65 indicators in 2021/2022 (MŠMT added the spádový-obvod breakdown). C1.4.1 stepped from 15 → 32 indicators in 2014/2015 (added speciální-třídy sub-row). These are documented in the `value` strings — column headers self-document.
+- **Robustness notes:**
+  - **`windows-1250` decode is mandatory.** The server emits a `Content-Type: text/html; charset=Windows-1250` header but most parsers default to UTF-8 and silently mangle the diacritics. The script forces `bytes.decode('windows-1250')` before parsing.
+  - **The rowspan-group end-test uses the NUTS-code anchor (CZ010).** Earlier-yearbook drafts used kraj-name regex (`other_kraj_re`), but that leaked rows when MŠMT introduced NUTS-2 aggregations (`Střední Čechy`, `Střední Morava`, `Moravskoslezsko`) that don't match the kraj-name pattern. The NUTS-code anchor is yearbook-edition-stable — every kraj's code is unique and persistent.
+  - **HTML has stray `<tr></tr>` pairs** between header and data rows. The parser handles these by allowing fresh `<tr>` tags to attach to un-opened rowspan-pre-filled grid rows — see `TableExtractor._opened_rows` logic.
+  - **Granularity ceiling = kraj.** This is structural, not a parser limitation. The yearbook publishes by NUTS-3 region only; per-MČ and per-school enrolment is not surfaced. **Do NOT try to bend the script to extract finer rows — they aren't in the HTML.** See `progress/WP-03-enrolment.md` for the recon receipt.
+  - **HTTP 500s for the older years are expected** — the table codes C1.22.1 and C1.4.1 didn't exist in MŠMT's 2005-2013 yearbooks; the schema was renumbered around 2013/2014. The script logs each failure and continues; the sidecar README documents the gap.
+  - **`uv` is not needed.** stdlib-only (urllib + html.parser). The accompanying `pyproject.toml` declares no dependencies — exists only to mark the directory as a project for tool consistency with WP-02 / WP-04.
+- **Last verified:** 2026-05-19.
+
 ---
 
 ## Retired sections

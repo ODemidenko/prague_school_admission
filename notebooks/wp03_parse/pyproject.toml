@@ -1,0 +1,7 @@
+[project]
+name = "wp03-parse"
+version = "0.1.0"
+description = "Pull MŠMT statistical yearbook (statis.msmt.gov.cz/rocenka) 2005/06–2025/26 — kraj-level enrolment series — WP-03 fallback B'"
+requires-python = ">=3.11"
+# stdlib only — no third-party deps. urllib + html.parser are enough.
+dependencies = []

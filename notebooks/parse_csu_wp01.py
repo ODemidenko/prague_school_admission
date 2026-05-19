@@ -17,7 +17,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from openpyxl import load_workbook
+from openpyxl import load_workbook  # pyright: ignore[reportMissingModuleSource]
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "memory" / "raw" / "demographics" / "csu"
@@ -107,11 +107,13 @@ def parse_age_xlsx() -> list[dict]:
             name = r[name_col]
             if name not in TARGET_MCS:
                 continue
+            assert isinstance(name, str)  # narrow openpyxl Cell.value union
             csu_kod = r[kod_col]
             for (lo, hi), col in band_cols.items():
                 cnt = r[col]
                 if cnt is None:
                     continue
+                assert isinstance(cnt, (int, float))
                 out.append(
                     {
                         "year": year,
@@ -155,7 +157,7 @@ def parse_births_xlsx() -> list[dict]:
         # find row labelled 'Živě narození'
         kod_row = None
         born_row = None
-        for i, r in enumerate(rows):
+        for r in rows:
             lab = r[0]
             if isinstance(lab, str):
                 if lab.startswith("Kód ZÚJ"):
@@ -169,6 +171,7 @@ def parse_births_xlsx() -> list[dict]:
             val = born_row[col]
             if val is None:
                 continue
+            assert isinstance(val, (int, float))
             csu_kod = kod_row[col] if kod_row else ""
             out.append(
                 {
