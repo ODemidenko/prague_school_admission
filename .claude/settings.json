@@ -29,7 +29,11 @@
       "WebFetch(domain:www.praha14.cz)",
       "WebFetch(domain:praha14.cz)",
       "WebFetch(domain:mapaskol.cz)",
-      "WebFetch(domain:www.mapaskol.cz)"
+      "WebFetch(domain:www.mapaskol.cz)",
+      "WebFetch(domain:csicr.cz)",
+      "WebFetch(domain:www.csicr.cz)",
+      "WebFetch(domain:cermat.cz)",
+      "WebFetch(domain:www.cermat.cz)"
     ]
   }
 }

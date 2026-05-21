@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sSL --fail -o vyhlaska-hmp-19-2025_via-P6.pdf 'https://www.praha6.cz/cs/assets/potrebuji_vyresit/8327/prilohy/vyhlaska_hmp_ozv_zs_c_19_2025_165beb5055.pdf')",
+      "Bash(pdfinfo vyhlaska-hmp-19-2025_via-P6.pdf)",
+      "WebFetch(domain:files.pythonhosted.org)",
+      "Bash(curl -sSL -k --connect-timeout 15 --max-time 60 -o statis_root.html 'https://statis.msmt.cz/')",
+      "Bash(curl -fsSL -k -I \"https://statis.msmt.gov.cz/rocenka/2025/kapitola_c.zip\")",
+      "Bash(curl -fsSL -k -I \"https://statis.msmt.gov.cz/rocenka/2024/kapitola_c.zip\")",
+      "Bash(curl -fsSL -k -X POST -d \"kapit=C\" -o statis_chapter_c.html \"https://statis.msmt.gov.cz/rocenka/rocenka.asp\")",
+      "Bash(iconv -f windows-1250 -t utf-8 statis_chapter_c.html)",
+      "Bash(curl -fsSL -k -X POST -d \"kapit=C&tab=C1.1&rck=20\" -o statis_c11_2025.html \"https://statis.msmt.gov.cz/rocenka/rocenka.asp\")",
+      "Bash(iconv -f windows-1250 -t utf-8 statis_c11_2025.html)",
+      "Bash(python3 notebooks/wp03_parse/fetch_statis.py)",
+      "Bash(awk -F, 'NR==1{next} $7==\"2024\"{print $3, $19}' findings/pressure_per_school.csv)",
+      "Bash(python3 /tmp/audit_catchment.py)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(awk ' *)",
+      "Bash(awk -F, 'NR==1 || NR>1' findings/pressure_per_school.csv)",
+      "WebFetch(domain:www.novoborska.cz)",
+      "WebFetch(domain:portal.csicr.cz)"
+    ]
+  }
+}

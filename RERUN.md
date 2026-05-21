@@ -300,6 +300,83 @@ When a section is re-run successfully against the same source, bump `Last verifi
   - **`uv` is not needed.** stdlib-only (urllib + html.parser). The accompanying `pyproject.toml` declares no dependencies — exists only to mark the directory as a project for tool consistency with WP-02 / WP-04.
 - **Last verified:** 2026-05-19.
 
+### R-08 wp06-school-identity
+
+- **WP:** WP-06 (Target-school identity verification).
+- **Depends on:** R-05 (`memory/aggregated/schools/zs_by_mc.csv` — the six RED-IZO rows).
+- **Source URL:**
+  - Per-school `.cz` website (homepage + Kontakty/Vedení + Dokumenty/Výroční zprávy) — six domains: `novoborska.cz`, `zselektra.cz`, `zsspitalska.cz`, `zsvencliku.cz`, `zsgenjanouska.cz`, `zschvaleticka.cz`.
+  - ČŠI portal: `https://portal.csicr.cz/School/<RED-IZO>` — six records (600040526, 691017379, 600040569, 600040496, 600040577, 600040585).
+  - MČ Praha 9 news item for Elektra context: `https://www.praha9.cz/nova-zakladni-skola-elektra-na-praze-9-uspesne-prosla-kolaudaci-a-uz-v-zari-privita-prvni-zaky`.
+- **Auth / access:** All six school domains and the ČŠI portal are covered by the project-level `.claude/settings.json` WebFetch allowlist (`csicr.cz`, `praha9.cz`, plus the six MČ hosts). The school-`.cz` domains themselves (`novoborska.cz`, `zselektra.cz`, etc.) are NOT explicitly listed in the project settings — at WP-06 run-time `WebFetch` succeeded without prompt because the top-level `"WebFetch"` allow rule was present. **For a future re-run, if `.claude/settings.json` removes the bare `"WebFetch"` entry, the six school domains need explicit `WebFetch(domain:<school>.cz)` allows.**
+- **Procedure:**
+  1. **No fetch needed if `memory/aggregated/schools_identity/*.md` files exist on disk.** They are the deliverable.
+  2. For a refresh, dispatch six parallel WebFetch calls per school in this order:
+     - First batch (homepage + vedení/kontakty): six fetches, two URLs each (homepage + vedení). Tight prompts asking for ředitel, address, datová schránka, zástupci, výroční-zpráva archive URL, pedagogical focus. "Not on page" required for misses.
+     - Second batch (výroční-zpráva archive drill-down): one fetch per school against the archive URL discovered in batch 1, asking for the list of (školní rok, PDF URL) pairs.
+     - Third batch (ČŠI portal cross-verification): one fetch per school against `https://portal.csicr.cz/School/<RED-IZO>`, asking for canonical rejstřík name + ředitel(ka) with academic title + address + zřizovatel.
+  3. Reconcile per school. **The ČŠI portal is authoritative on the ředitel(ka) name and title** if it disagrees with the school's own page (resolves typos). The school's own page is authoritative on datová schránka and zástupci. Both agree on address.
+  4. Write `memory/aggregated/schools_identity/<slug>.md` per school using the template (RED-IZO, IZO, DS, address, zřizovatel, ředitel + tenure, website, výroční-zpráva archive + most-recent URL + earliest year, one-line sourced context, sources list).
+  5. If any subpage URL 404s during the drill (Chvaletická's vedení and kontakty pages were 404s in 2026-05-21), record the dead URL in the per-school file under a "Dead URLs checked" section and use ČŠI portal as the fallback for that field.
+- **Expected output:**
+  - Six files at `memory/aggregated/schools_identity/<slug>.md`, slugs: `novoborska`, `elektra`, `spitalska`, `venclikova`, `janouska`, `chvaleticka`.
+  - Each file has the template's seven sections (Identifiers, Location and founder, Leadership, Online presence, Context, Sources, optionally "Dead URLs checked").
+- **Verification:**
+  - `ls memory/aggregated/schools_identity/*.md | wc -l` → 6.
+  - `grep -l "Mgr. Michael Kipor" memory/aggregated/schools_identity/spitalska.md` → 1 (baseline school ředitel sentinel).
+  - `grep -l "Mgr. Klára Machová" memory/aggregated/schools_identity/venclikova.md` → 1.
+  - `grep -c "RED-IZO" memory/aggregated/schools_identity/*.md` → 1 line per file (all six should match the rejstřík values in `zs_by_mc.csv`).
+  - `grep -l "not publicly available" memory/aggregated/schools_identity/*.md` → all six (tenure-start year is publicly unavailable across the board; see "Open issues" in `progress/WP-06-identity.md`).
+- **Robustness notes:**
+  - **The ČŠI portal occasionally carries display-data bugs.** Elektra's portal record showed `skola@novoborska.cz` as the email — almost certainly a copy-paste error on ČŠI's side. Treat the ČŠI portal as authoritative for `rejstříková jména`, `adresa`, and `zřizovatel`; cross-check ALL other fields against the school's own .cz page.
+  - **Title forms (Mgr./Ing./RNDr.) can disagree between sources.** When they do, the ČŠI/rejstřík form wins. Novoborská: school page omits "Ing.", ČŠI keeps it. Elektra: school page says "Ing.", ČŠI says "Mgr.". Pick ČŠI.
+  - **CMS migrations rotate PDF asset URLs.** Venclíkova's výroční zprávy live under `/media/<8-char-hash>/<filename>.pdf` (Umbraco). Janouška uses `/download/<slug>/`. Špitálská uses `/o-skole/dokumenty-skoly/<slug>-NN.html`. None of the deep PDF URLs is stable across a CMS migration — always re-discover from the archive index URL.
+  - **Chvaletická's site appears mid-migration in 2026-05.** Multiple institutional subpages 404. If a future re-run finds them restored, capture the URLs and update the identity file's "Sources" section.
+  - **The MŠMT ISV/RSSZ portal** (`https://isv.gov.cz/rssz/`) carries the same rejstřík data as the ČŠI portal but with a more search-form-heavy UI. Either works; ČŠI portal links by RED-IZO are more script-friendly.
+- **Last verified:** 2026-05-21.
+
+### R-09 wp07-csi-inspection-reports
+
+- **WP:** WP-07 (ČŠI inspection report extraction).
+- **Depends on:** R-08 (`memory/aggregated/schools_identity/*.md` — the six RED-IZOs + current ředitel(ka) names for the headmaster_continuity check).
+- **Source URL:**
+  - ČŠI Registr inspekčních zpráv per school: `https://www.csicr.cz/cz/Registr-inspekcnich-zprav?identifikator=<RED-IZO>` — returns the school detail row with a `d=<N>` parameter; fetch `https://www.csicr.cz/cz/Registr-inspekcnich-zprav?d=<N>` to get the per-school inspection report list (each row has a PDF URL on `portal.csicr.cz/Files/Get/<hash>`).
+  - PDF inspection reports — six URLs captured 2026-05-21:
+    - `https://portal.csicr.cz/Files/Get/57496fcd7de14cb79ea36901b7e423a4` (novoborska, 2024-03-18 → 22)
+    - `https://portal.csicr.cz/Files/Get/de20d7ec76854c36b56694a13a8a3378` (spitalska, 2022-01-25 + 2022-03-07/10)
+    - `https://portal.csicr.cz/Files/Get/f73f672714604d6198da2074cb2d3f6e` (elektra, 2025-05-07 → 15)
+    - `https://portal.csicr.cz/Files/Get/aed13e5fbbd646fcb951e4908fd3d427` (venclikova, 2024-04-09 → 12)
+    - `https://portal.csicr.cz/Files/Get/a7803fe25c8c4d2cad26f6506c2bc40f` (janouska, 2025-02-11 → 14)
+    - `https://portal.csicr.cz/Files/Get/31a2a623a2bb40adaad214ca687d93e2` (chvaleticka, 2021-11-18 → 23)
+- **Auth / access:** Covered by `WebFetch(domain:csicr.cz)` in `.claude/settings.json`. `WebFetch` against `portal.csicr.cz` URLs returns binary PDF content rather than parsable text — but the harness silently caches the file at `~/.claude/projects/<project-id>/<session-id>/tool-results/webfetch-<id>.pdf` and prints that path in the response. Workflow: WebFetch the PDF URL (causes cache write), `cp` from the cache path to `memory/raw/csi/<slug>/<hash>.pdf`, then parse with `uv run --with pypdf --no-project python3`. **Caveat:** sandboxed `curl` to `portal.csicr.cz` is denied (the sandbox network allowlist treats it as a separate host from `csicr.cz`); `dangerouslyDisableSandbox: true` is also user-denied. WebFetch is the only working path.
+- **Procedure:**
+  1. **No fetch needed if `memory/aggregated/csi/<slug>.md` files exist on disk and the recency_warning fields are still within reason.** They are the deliverable.
+  2. For a refresh, dispatch the work as parallel WebFetch calls in three phases:
+     - **Phase A — discovery.** Six parallel WebFetches against `https://www.csicr.cz/cz/Registr-inspekcnich-zprav?identifikator=<RED-IZO>` (one per school). Each returns the school row with a `d=<N>` parameter. Six more parallel WebFetches against `?d=<N>` to enumerate the per-school list of inspection reports (date range + PDF URL per row).
+     - **Phase B — PDF acquisition.** For each school, identify the most recent inspection row. Fetch its PDF URL via WebFetch. The cached file lands at `~/.claude/projects/.../tool-results/webfetch-<id>.pdf` per Auth / access above. `cp` to `memory/raw/csi/<slug>/<hash>.pdf` (filename = the hash segment from the URL).
+     - **Phase C — extraction.** `uv run --with pypdf --no-project python3` to extract text from each PDF. Save full text at `memory/raw/csi/<slug>/_text.txt`. Pull the cover-page header (name, RED-IZO, IZO, ředitel, dates), the Závěry block (Silné stránky / Slabé stránky / Doporučení), and the Charakteristika section. Paraphrase findings (≤ 5 bullets per side).
+  3. Cross-check the report's ředitel name against `memory/aggregated/schools_identity/<slug>.md` to set `headmaster_continuity` (yes / no).
+  4. Set `recency_warning = true` if the report's last day is > 4 years before the snapshot date.
+  5. Write per-school file `memory/aggregated/csi/<slug>.md` per the template in `memory/aggregated/csi/novoborska.md` (use it as the structural canon — Inspection metadata table, Dimensions, Findings — positive, Findings — negative, Red flags, Notes).
+- **Expected output:**
+  - Six files at `memory/aggregated/csi/<slug>.md`, slugs: `novoborska`, `elektra`, `spitalska`, `venclikova`, `janouska`, `chvaleticka`.
+  - Six PDFs at `memory/raw/csi/<slug>/<hash>.pdf`.
+  - Six pypdf-extracted text dumps at `memory/raw/csi/<slug>/_text.txt`.
+- **Verification:**
+  - `ls memory/aggregated/csi/*.md | wc -l` → 6.
+  - `ls memory/raw/csi/*/*.pdf | wc -l` → 6 (one PDF per school).
+  - `grep -c "ČŠIA-" memory/aggregated/csi/*.md` → 6 (every file has a čj. code).
+  - `grep -l "headmaster_continuity | no" memory/aggregated/csi/*.md` → expect `spitalska.md` and `elektra.md` (the two schools where current ředitel(ka) differs from the inspection-report ředitel).
+  - `grep -l "recency_warning | true" memory/aggregated/csi/*.md` → expect `spitalska.md` (border 4y2mo) and `chvaleticka.md` (4y6mo).
+- **Robustness notes:**
+  - **The ČŠI portal occasionally carries display-data bugs.** Cross-verify the PDF cover page metadata against the school identity file rather than trusting the portal record alone. Example from WP-06: Elektra's portal record had `skola@novoborska.cz` as the email (clearly wrong). Example from WP-07: an earlier WebSearch result pointed at a PDF tagged "Špitálská" that was actually the inspection report for ZŠ Veronské náměstí 391 in Praha 10 — only the cover-page parse revealed the misattribution. Always extract the cover page before relying on a PDF URL.
+  - **Modern (post-2022) ČŠI report format is narrative + criterion codes.** The old 5-grade scale (`vynikající / nadprůměrná / průměrná / podprůměrná / nevyhovující`) referenced in `findings/school_quality/scope.md §4.1` is not used. The per-school template's "Dimensions" table accordingly uses a narrative direction + kritéria.csicr.cz code form.
+  - **Inspection-type taxonomy:** every modern report's Předmět inspekční činnosti formula `Hodnocení podmínek, průběhu a výsledků vzdělávání podle § 174 odst. 2 písm. b) a c)` = komplexní inspekce. Older "2021/2022"-format reports (spitalska, chvaleticka in this batch) use a slightly different layout but the same komplexní scope.
+  - **Stand-alone tematická / kontrolní follow-ups exist as separate PDFs.** When the most recent registr row is a tematická/kontrolní, the recipe should also pull the latest komplexní in the same school's history and use the komplexní as the primary record (with the tematická noted under Notes). None of the six schools had this case as of 2026-05-21.
+  - **`portal.csicr.cz/School/<RED-IZO>` is NOT the inspection-report list source.** That URL was the original WP-07 entry point but it returned only school identity fields. The Registr inspekčních zpráv with `?identifikator=` filter is the right entry point.
+  - **The open-data CSV at `https://opendata.csicr.cz/Transformation/Download/137`** (dataset `https://opendata.csicr.cz/DataSet/Detail/69`) has columns `REDIZO, Jmeno, DatumOd, DatumDo, LinkIZ, PortalLink` and would be a more deterministic bulk source — but WebFetch summarises large CSVs and returned only one matching row per query, so the per-school registry pages were the more reliable path for six schools. For a 50+-school refresh in the future, the CSV is worth re-attempting (probably needs `curl` with `dangerouslyDisableSandbox: true` since `opendata.csicr.cz` is a separate sandbox host).
+- **Last verified:** 2026-05-21.
+
 ---
 
 ## Retired sections
